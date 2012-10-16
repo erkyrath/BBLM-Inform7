@@ -55,6 +55,48 @@ static void CalculateRuns(BBLMParamBlock &pb, const BBLMCallbackBlock &bblm_call
 			continue;
 		}
 		
+		if (ch == '[') {
+			if (pos > lastpos) {
+				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsCode, lastpos, pos-lastpos);
+				if (!res)
+					return;
+				lastpos = pos;
+			}
+			
+			int depth = 1;
+			
+			p++;
+			pos++;
+			while (1) {
+				ch = *p;
+				if (!ch)
+					break;
+				if (ch == '[') {
+					depth++;
+				}
+				if (ch == ']') {
+					depth--;
+					if (depth <= 0)
+						break;
+				}
+				p++;
+				pos++;
+			}
+			if (ch == ']') {
+				p++;
+				pos++;
+			}
+			
+			if (pos > lastpos) {
+				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsBlockComment, lastpos, pos-lastpos);
+				if (!res)
+					return;
+				lastpos = pos;
+			}
+			
+			continue;
+		}
+		
 		p++;
 		pos++;
 		
