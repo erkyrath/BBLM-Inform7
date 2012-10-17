@@ -1,4 +1,5 @@
 BBEdit/TextWrangler Language Module for Inform 7
+https://github.com/erkyrath/BBLM-Inform7
 Created by Andrew Plotkin
 
 This is a simple syntax coloring module for Inform 7. It is not as

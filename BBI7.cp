@@ -1,5 +1,6 @@
 /*
 	BBEdit/TextWrangler Language Module for Inform 7
+	https://github.com/erkyrath/BBLM-Inform7
 	Created by Andrew Plotkin
  
 	This source file is in the public domain.
