@@ -1,5 +1,5 @@
 /*
-	BBEdit Language Module for Inform 7
+	BBEdit/TextWrangler Language Module for Inform 7
 	Created by Andrew Plotkin
  
 	This source file is in the public domain.
