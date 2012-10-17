@@ -40,9 +40,9 @@
 			<key>BBLMMainFunctionName</key>
 			<string>Inform7MachO</string>
 			<key>BBLMScansFunctions</key>
-			<false/>
-			<key>BBLMFunctionScannerDoesFoldsToo</key>
 			<true/>
+			<key>BBLMFunctionScannerDoesFoldsToo</key>
+			<false/>
 			<key>BBLMSuffixMap</key>
 			<array>
 				<dict>

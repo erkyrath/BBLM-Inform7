@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include <vector>
+
 #include <Carbon/Carbon.h>
 
 #include "BBLMInterface.h"
@@ -55,7 +57,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 	UInt32 lastpos = params.fCalcRunParams.fStartOffset;
 	UInt32 pos = lastpos;
 	
-	lastch = ' ';
+	ch = ' ';
 	p += pos;
 	
 	while (1) {
@@ -212,6 +214,188 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 	}
 }
 
+#define NUM_HEADINGS (5)
+
+typedef struct heading_def_struct {
+	int len;
+	char name[8];
+} heading_def_t;
+static heading_def_t heading_def[NUM_HEADINGS] = {
+	{6, "volume"},
+	{4, "book"},
+	{4, "part"},
+	{7, "chapter"},
+	{7, "section"}
+};
+
+static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_callbacks)
+{
+	BBLMTextIterator p(params);
+	//bool res;
+	UniChar ch, lastch;
+	//UInt32 lastpos = 0;
+	UInt32 pos = 0;
+	
+	std::vector<UniChar> linebuf;
+	int wordend = -1;
+	int linestart = 0;
+	
+	ch = ' ';
+	p += pos;
+	
+	while (1) {
+		lastch = ch;
+		ch = *p;
+		if (!ch)
+			break;
+		
+		if (ch == '"') {
+			p++;
+			pos++;
+			while ((ch = *p), (ch && ch != '"')) {
+				if (ch == '[') {
+					p++;
+					pos++;
+					while (1) {
+						ch = *p;
+						if (!ch)
+							break;
+						if (ch == ']' || ch == '"') {
+							break;
+						}
+						p++;
+						pos++;
+					}
+					if (ch == ']') {
+						p++;
+						pos++;
+					}
+					continue;
+				}
+				p++;
+				pos++;
+			}
+			if (ch == '"') {
+				p++;
+				pos++;
+			}
+			
+			ch = ' ';
+			continue;
+		}
+		
+		if (ch == '[') {
+			int depth = 1;
+			
+			p++;
+			pos++;
+			while (1) {
+				ch = *p;
+				if (!ch)
+					break;
+				if (ch == '[') {
+					depth++;
+				}
+				if (ch == ']') {
+					depth--;
+					if (depth <= 0)
+						break;
+				}
+				p++;
+				pos++;
+			}
+			if (ch == ']') {
+				p++;
+				pos++;
+			}
+			
+			ch = ' ';
+			continue;
+		}
+		
+		if (ch == '-' && lastch == '(') {
+			ch = ' ';
+			
+			p++;
+			pos++;
+			while (1) {
+				lastch = ch;
+				ch = *p;
+				if (!ch)
+					break;
+				if (ch == ')' && lastch == '-') {
+					break;
+				}
+				p++;
+				pos++;
+			}
+			if (ch == ')') {
+				p++;
+				pos++;
+			}
+			
+			ch = ' ';
+			continue;
+		}
+		
+		if (ch == '\n' || ch == '\r') {
+			for (int lx=0; lx<NUM_HEADINGS; lx++) {
+				if (wordend == heading_def[lx].len) {
+					bool match = true;
+					for (int ix=0; ix<wordend && match; ix++) {
+						if (tolower(linebuf[ix]) != heading_def[lx].name[ix]) {
+							match = false;
+						}
+					}
+					if (match) {
+						BBLMProcInfo procinfo;
+						UniChar *buf = &linebuf[0];
+						int linelength = linebuf.size();
+						UInt32 offset = 0;
+						OSErr err = bblmAddTokenToBuffer(&bblm_callbacks, params.fFcnParams.fTokenBuffer, buf, linelength, true, &offset);
+						if (err)
+							return err;
+						procinfo.fFunctionStart = linestart;
+						procinfo.fFunctionEnd = pos;
+						procinfo.fSelStart = linestart;
+						procinfo.fSelEnd = pos;
+						procinfo.fFirstChar = linestart;
+						procinfo.fKind = kBBLMFunctionMark;
+						procinfo.fIndentLevel = 0;
+						procinfo.fFlags = 0;
+						procinfo.fNameStart = offset;
+						procinfo.fNameLength = linelength;
+						
+						UInt32 funcindex = 0;
+						err = bblmAddFunctionToList(&bblm_callbacks, params.fFcnParams.fFcnList, procinfo, &funcindex);
+						if (err)
+							return err;
+					}
+				}
+			}
+			linebuf.empty();
+			wordend = -1;
+			linestart = pos+1;
+		}
+		else {
+			if (isspace(ch) && linebuf.size() == 0) {
+				// ignore leading whitespace in a line
+			}
+			else {
+				if (wordend < 0 && !isalpha(ch)) {
+					// the first non-whitespace character, so it's the end of the first word.
+					wordend = linebuf.size();
+				}
+				linebuf.push_back(ch);
+			}
+		}
+		
+		p++;
+		pos++;
+	}
+	
+	return noErr;
+}
 
 extern "C"
 {
@@ -247,8 +431,7 @@ OSErr Inform7MachO(BBLMParamBlock &params,
 			break;
 
 		case kBBLMScanForFunctionsMessage:
-			//ScanForFunctions(params, bblm_callbacks);
-			result = noErr;
+			result = ScanForFunctions(params, bblm_callbacks);
 			break;
 
 		case kBBLMAdjustRangeMessage:
