@@ -238,6 +238,10 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 	//UInt32 lastpos = 0;
 	UInt32 pos = 0;
 	
+	int pendingheaders[NUM_HEADINGS];
+	for (int lx=0; lx<NUM_HEADINGS; lx++)
+		pendingheaders[lx] = -1;
+	
 	std::vector<UniChar> linebuf;
 	int wordend = -1;
 	UInt32 linestart = 0;
@@ -361,19 +365,37 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 			
 			if (foundlevel >= 0) {
 				BBLMProcInfo procinfo;
+				OSErr err;
+				
+				// Close all the pending functions of this level and lower
+				for (int lx=NUM_HEADINGS-1; lx >= foundlevel; lx--) {
+					if (pendingheaders[lx] >= 0) {
+						err = bblmGetFunctionEntry(&bblm_callbacks, params.fFcnParams.fFcnList, pendingheaders[lx], procinfo);
+						if (err)
+							return err;
+						procinfo.fFunctionEnd = linestart;
+						err = bblmUpdateFunctionEntry(&bblm_callbacks, params.fFcnParams.fFcnList, pendingheaders[lx], procinfo);
+						if (err)
+							return err;
+						
+						pendingheaders[lx] = -1;
+					}
+				}
+				
 				UniChar *buf = &linebuf[0];
 				int linelength = linebuf.size();
 				UInt32 offset = 0;
-				OSErr err = bblmAddTokenToBuffer(&bblm_callbacks, params.fFcnParams.fTokenBuffer, buf, linelength, true, &offset);
+				err = bblmAddTokenToBuffer(&bblm_callbacks, params.fFcnParams.fTokenBuffer, buf, linelength, true, &offset);
 				if (err)
 					return err;
+				bzero(&procinfo, sizeof(procinfo));
 				procinfo.fFunctionStart = linestart;
 				procinfo.fFunctionEnd = pos;
 				procinfo.fSelStart = linestart;
 				procinfo.fSelEnd = pos;
 				procinfo.fFirstChar = linestart;
 				procinfo.fKind = kBBLMFunctionMark;
-				procinfo.fIndentLevel = 0;
+				procinfo.fIndentLevel = foundlevel;
 				procinfo.fFlags = 0;
 				procinfo.fNameStart = offset;
 				procinfo.fNameLength = linelength;
@@ -383,6 +405,8 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 				err = bblmAddFunctionToList(&bblm_callbacks, params.fFcnParams.fFcnList, procinfo, &funcindex);
 				if (err)
 					return err;
+				
+				pendingheaders[foundlevel] = funcindex;
 			}
 			
 			linebuf.clear();
@@ -405,6 +429,24 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 		p++;
 		pos++;
 	}
+	
+	// Close all the pending functions
+	for (int lx=NUM_HEADINGS-1; lx >= 0; lx--) {
+		if (pendingheaders[lx] >= 0) {
+			BBLMProcInfo procinfo;
+			OSErr err = bblmGetFunctionEntry(&bblm_callbacks, params.fFcnParams.fFcnList, pendingheaders[lx], procinfo);
+			if (err)
+				return err;
+			procinfo.fFunctionEnd = linestart;
+			err = bblmUpdateFunctionEntry(&bblm_callbacks, params.fFcnParams.fFcnList, pendingheaders[lx], procinfo);
+			if (err)
+				return err;
+			
+			pendingheaders[lx] = -1;
+		}
+	}
+	
+	// Should probably adjust the indents so that the minimum is zero. (I.e., if there are no Volumes.)
 	
 	return noErr;
 }
