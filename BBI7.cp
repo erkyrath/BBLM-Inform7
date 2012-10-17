@@ -343,6 +343,7 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 		}
 		
 		if (ch == '\n' || ch == '\r') {
+			int foundlevel = -1;
 			for (int lx=0; lx<NUM_HEADINGS; lx++) {
 				if (wordend == heading_def[lx].len) {
 					bool match = true;
@@ -352,32 +353,38 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 						}
 					}
 					if (match) {
-						BBLMProcInfo procinfo;
-						UniChar *buf = &linebuf[0];
-						int linelength = linebuf.size();
-						UInt32 offset = 0;
-						OSErr err = bblmAddTokenToBuffer(&bblm_callbacks, params.fFcnParams.fTokenBuffer, buf, linelength, true, &offset);
-						if (err)
-							return err;
-						procinfo.fFunctionStart = linestart;
-						procinfo.fFunctionEnd = pos;
-						procinfo.fSelStart = linestart;
-						procinfo.fSelEnd = pos;
-						procinfo.fFirstChar = linestart;
-						procinfo.fKind = kBBLMFunctionMark;
-						procinfo.fIndentLevel = 0;
-						procinfo.fFlags = 0;
-						procinfo.fNameStart = offset;
-						procinfo.fNameLength = linelength;
-						
-						//syslog(LOG_WARNING, "### adding function start %ld, end %ld", linestart, pos);
-						UInt32 funcindex = 0;
-						err = bblmAddFunctionToList(&bblm_callbacks, params.fFcnParams.fFcnList, procinfo, &funcindex);
-						if (err)
-							return err;
+						foundlevel = lx;
+						break;
 					}
 				}
 			}
+			
+			if (foundlevel >= 0) {
+				BBLMProcInfo procinfo;
+				UniChar *buf = &linebuf[0];
+				int linelength = linebuf.size();
+				UInt32 offset = 0;
+				OSErr err = bblmAddTokenToBuffer(&bblm_callbacks, params.fFcnParams.fTokenBuffer, buf, linelength, true, &offset);
+				if (err)
+					return err;
+				procinfo.fFunctionStart = linestart;
+				procinfo.fFunctionEnd = pos;
+				procinfo.fSelStart = linestart;
+				procinfo.fSelEnd = pos;
+				procinfo.fFirstChar = linestart;
+				procinfo.fKind = kBBLMFunctionMark;
+				procinfo.fIndentLevel = 0;
+				procinfo.fFlags = 0;
+				procinfo.fNameStart = offset;
+				procinfo.fNameLength = linelength;
+				
+				//syslog(LOG_WARNING, "### adding function start %ld, end %ld", linestart, pos);
+				UInt32 funcindex = 0;
+				err = bblmAddFunctionToList(&bblm_callbacks, params.fFcnParams.fFcnList, procinfo, &funcindex);
+				if (err)
+					return err;
+			}
+			
 			linebuf.clear();
 			wordend = -1;
 			linestart = pos+1;
@@ -387,7 +394,7 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 				// ignore leading whitespace in a line
 			}
 			else {
-				if (wordend < 0 && !isalpha(ch)) {
+				if (wordend < 0 && isspace(ch)) {
 					// the first non-whitespace character, so it's the end of the first word.
 					wordend = linebuf.size();
 				}
