@@ -11,12 +11,32 @@
 
 #define LANGUAGE_CODE 'Inf7'
 
-static void CalculateRuns(BBLMParamBlock &pb, const BBLMCallbackBlock &bblm_callbacks)
+static void AdjustRange(BBLMParamBlock &params, const BBLMCallbackBlock &callbacks)
 {
-	BBLMTextIterator p(pb);
+	bool res;
+	
+	/* Run backwards to the most recent code range (not a string or comment). */
+	while (params.fAdjustRangeParams.fStartIndex > 0) {
+		DescType language;
+		BBLMRunCode kind;
+		SInt32 pos;
+		SInt32 len;
+		res = bblmGetRun(&callbacks, params.fAdjustRangeParams.fStartIndex, language, kind, pos, len);
+		if (!res)
+			return;
+		if (kind == kBBLMRunIsCode)
+			return;
+		params.fAdjustRangeParams.fStartIndex -= 1;
+	}
+}
+
+
+static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_callbacks)
+{
+	BBLMTextIterator p(params);
 	bool res;
 	UniChar ch;
-	UInt32 lastpos = pb.fCalcRunParams.fStartOffset;
+	UInt32 lastpos = params.fCalcRunParams.fStartOffset;
 	UInt32 pos = lastpos;
 	
 	p += pos;
@@ -37,6 +57,37 @@ static void CalculateRuns(BBLMParamBlock &pb, const BBLMCallbackBlock &bblm_call
 			p++;
 			pos++;
 			while ((ch = *p), (ch && ch != '"')) {
+				if (ch == '[') {
+					if (pos > lastpos) {
+						res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsDoubleString, lastpos, pos-lastpos);
+						if (!res)
+							return;
+						lastpos = pos;
+					}
+					p++;
+					pos++;
+					while (1) {
+						ch = *p;
+						if (!ch)
+							break;
+						if (ch == ']' || ch == '"') {
+							break;
+						}
+						p++;
+						pos++;
+					}
+					if (ch == ']') {
+						p++;
+						pos++;
+					}
+					if (pos > lastpos) {
+						res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsPreprocessor, lastpos, pos-lastpos);
+						if (!res)
+							return;
+						lastpos = pos;
+					}
+					continue;
+				}
 				p++;
 				pos++;
 			}
@@ -143,7 +194,7 @@ OSErr Inform7MachO(BBLMParamBlock &params,
 			break;
 
 		case kBBLMAdjustRangeMessage:
-			//AdjustRange(params, bblm_callbacks);
+			AdjustRange(params, bblm_callbacks);
 			result = noErr;
 			break;
 		
