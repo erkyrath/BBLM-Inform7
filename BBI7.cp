@@ -1,3 +1,12 @@
+/*
+	BBEdit Language Module for Inform 7
+	Created by Andrew Plotkin
+ 
+	This source file is in the public domain.
+	The header files in "SDK Headers" are taken from the BBEdit Development Kit, and are copyright Bare Bones Software, Inc.
+	http://www.barebones.com/support/develop/
+*/
+
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
