@@ -49,6 +49,10 @@
 					<key>BBLMLanguageSuffix</key>
 					<string>.ni</string>
 				</dict>
+				<dict>
+					<key>BBLMLanguageSuffix</key>
+					<string>.i7x</string>
+				</dict>
 			</array>
 			<key>BBLMUseHTMLFileSearchRules</key>
 			<false/>
