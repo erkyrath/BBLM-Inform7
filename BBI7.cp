@@ -11,6 +11,11 @@
 
 #define LANGUAGE_CODE 'Inf7'
 
+enum
+{
+	kBBLMRunIsSubstitution =  kBBLMFirstUserRunKind,
+};
+
 static void AdjustRange(BBLMParamBlock &params, const BBLMCallbackBlock &callbacks)
 {
 	bool res;
@@ -81,7 +86,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 						pos++;
 					}
 					if (pos > lastpos) {
-						res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsPreprocessor, lastpos, pos-lastpos);
+						res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsSubstitution, lastpos, pos-lastpos);
 						if (!res)
 							return;
 						lastpos = pos;
@@ -199,9 +204,13 @@ OSErr Inform7MachO(BBLMParamBlock &params,
 			break;
 		
 		case kBBLMMapRunKindToColorCodeMessage:
-			switch (params.fMapRunParams.fRunKind){
-			default:
-				params.fMapRunParams.fMapped =	false;
+			switch (params.fMapRunParams.fRunKind) {
+				case kBBLMRunIsSubstitution:
+					params.fMapRunParams.fColorCode = kBBLMXMLProcessingInstructionColor;
+					params.fMapRunParams.fMapped =	true;
+					break;
+				default:
+					params.fMapRunParams.fMapped =	false;
 			}
 			result = noErr;
 			break;
