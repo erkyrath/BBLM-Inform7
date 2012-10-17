@@ -23,6 +23,7 @@
 enum
 {
 	kBBLMRunIsSubstitution =  kBBLMFirstUserRunKind,
+	kBBLMRunIsInform6,
 };
 
 static void AdjustRange(BBLMParamBlock &params, const BBLMCallbackBlock &callbacks)
@@ -49,13 +50,15 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 {
 	BBLMTextIterator p(params);
 	bool res;
-	UniChar ch;
+	UniChar ch, lastch;
 	UInt32 lastpos = params.fCalcRunParams.fStartOffset;
 	UInt32 pos = lastpos;
 	
+	lastch = ' ';
 	p += pos;
 	
 	while (1) {
+		lastch = ch;
 		ch = *p;
 		if (!ch)
 			break;
@@ -117,6 +120,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 				lastpos = pos;
 			}
 			
+			ch = ' ';
 			continue;
 		}
 		
@@ -159,12 +163,51 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 				lastpos = pos;
 			}
 			
+			ch = ' ';
+			continue;
+		}
+		
+		if (ch == '-' && lastch == '(') {
+			if (pos-1 > lastpos) {
+				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsCode, lastpos, (pos-1)-lastpos);
+				if (!res)
+					return;
+				lastpos = pos-1;
+			}
+			
+			ch = ' ';
+			
+			p++;
+			pos++;
+			while (1) {
+				lastch = ch;
+				ch = *p;
+				if (!ch)
+					break;
+				if (ch == ')' && lastch == '-') {
+					break;
+				}
+				p++;
+				pos++;
+			}
+			if (ch == ')') {
+				p++;
+				pos++;
+			}
+			
+			if (pos > lastpos) {
+				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsInform6, lastpos, pos-lastpos);
+				if (!res)
+					return;
+				lastpos = pos;
+			}
+			
+			ch = ' ';
 			continue;
 		}
 		
 		p++;
 		pos++;
-		
 	}
 }
 
@@ -216,6 +259,10 @@ OSErr Inform7MachO(BBLMParamBlock &params,
 			switch (params.fMapRunParams.fRunKind) {
 				case kBBLMRunIsSubstitution:
 					params.fMapRunParams.fColorCode = kBBLMXMLProcessingInstructionColor;
+					params.fMapRunParams.fMapped =	true;
+					break;
+				case kBBLMRunIsInform6:
+					params.fMapRunParams.fColorCode = kBBLMSGMLAttributeValueColor;
 					params.fMapRunParams.fMapped =	true;
 					break;
 				default:
