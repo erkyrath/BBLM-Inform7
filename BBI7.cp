@@ -228,6 +228,8 @@ static heading_def_t heading_def[NUM_HEADINGS] = {
 	{7, "section"}
 };
 
+#include <syslog.h> //###
+
 static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_callbacks)
 {
 	BBLMTextIterator p(params);
@@ -238,7 +240,9 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 	
 	std::vector<UniChar> linebuf;
 	int wordend = -1;
-	int linestart = 0;
+	UInt32 linestart = 0;
+	
+	//syslog(LOG_WARNING, "### ScanForFunctions");
 	
 	ch = ' ';
 	p += pos;
@@ -366,6 +370,7 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 						procinfo.fNameStart = offset;
 						procinfo.fNameLength = linelength;
 						
+						//syslog(LOG_WARNING, "### adding function start %ld, end %ld", linestart, pos);
 						UInt32 funcindex = 0;
 						err = bblmAddFunctionToList(&bblm_callbacks, params.fFcnParams.fFcnList, procinfo, &funcindex);
 						if (err)
@@ -373,7 +378,7 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 					}
 				}
 			}
-			linebuf.empty();
+			linebuf.clear();
 			wordend = -1;
 			linestart = pos+1;
 		}
