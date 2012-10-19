@@ -1,5 +1,5 @@
 BBEdit/TextWrangler Language Module for Inform 7
-https://github.com/erkyrath/BBLM-Inform7
+  https://github.com/erkyrath/BBLM-Inform7
 Created by Andrew Plotkin
 
 This is a simple syntax coloring module for Inform 7. It is not as
@@ -8,9 +8,21 @@ handles comments (including nested comments), strings, string
 substitutions, section headers, and I6 inclusions. Sections will
 be listed in the editor's "Functions" menu.
 
+(Sections do not currently support code folding, although I should
+look at that.)
+
+If you're reading this file because you want to install the module,
+you've got the wrong download! This is the source code. The compiled,
+installable module is at:
+  https://github.com/erkyrath/BBLM-Inform7/downloads
+(Hit the "BBLM-Inform7.zip" link, not the "Download as..." buttons
+above.)
+
 The "BBI7.cp" source file is in the public domain.
 
 The header files in "SDK Headers" are taken from the BBEdit Development Kit,
-  and are copyright Bare Bones Software, Inc.
-http://www.barebones.com/support/develop/
+and are copyright Bare Bones Software, Inc.
+  http://www.barebones.com/support/develop/
 
+Inform 7 is an interactive fiction development system:
+  http://inform7.com
