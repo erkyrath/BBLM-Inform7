@@ -182,6 +182,7 @@
 		2E4F91BF08631638009D6578 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = "Inform7-LM";
@@ -192,6 +193,7 @@
 		2E4F91C008631638009D6578 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = "Inform7-LM";
