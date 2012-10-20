@@ -6,10 +6,7 @@ This is a simple syntax coloring module for Inform 7. It is not as
 complete as the syntax-coloring in the I7 IDEs. This module currently
 handles comments (including nested comments), strings, string
 substitutions, section headers, and I6 inclusions. Sections will
-be listed in the editor's "Functions" menu.
-
-(Sections do not currently support code folding, although I should
-look at that.)
+be listed in the editor's "Functions" menu, and are also foldable.
 
 If you're reading this file because you want to install the module,
 you've got the wrong download! This is the source code. The compiled,
