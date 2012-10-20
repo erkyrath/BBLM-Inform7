@@ -370,6 +370,7 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 				// Close all the pending functions of this level and lower
 				for (int lx=NUM_HEADINGS-1; lx >= foundlevel; lx--) {
 					if (pendingheaders[lx] >= 0) {
+						int foldstart, foldlen;
 						err = bblmGetFunctionEntry(&bblm_callbacks, params.fFcnParams.fFcnList, pendingheaders[lx], procinfo);
 						if (err)
 							return err;
@@ -377,6 +378,13 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 						err = bblmUpdateFunctionEntry(&bblm_callbacks, params.fFcnParams.fFcnList, pendingheaders[lx], procinfo);
 						if (err)
 							return err;
+						foldstart = procinfo.fSelEnd;
+						foldlen = (procinfo.fFunctionEnd-1) - foldstart;
+						if (foldlen > 0) {
+							err = bblmAddFoldRange(&bblm_callbacks, foldstart, foldlen);
+							if (err)
+								return err;
+						}
 						
 						pendingheaders[lx] = -1;
 					}
@@ -434,6 +442,7 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 	for (int lx=NUM_HEADINGS-1; lx >= 0; lx--) {
 		if (pendingheaders[lx] >= 0) {
 			BBLMProcInfo procinfo;
+			int foldstart, foldlen;
 			OSErr err = bblmGetFunctionEntry(&bblm_callbacks, params.fFcnParams.fFcnList, pendingheaders[lx], procinfo);
 			if (err)
 				return err;
@@ -441,6 +450,13 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 			err = bblmUpdateFunctionEntry(&bblm_callbacks, params.fFcnParams.fFcnList, pendingheaders[lx], procinfo);
 			if (err)
 				return err;
+			foldstart = procinfo.fSelEnd;
+			foldlen = (procinfo.fFunctionEnd-1) - foldstart;
+			if (foldlen > 0) {
+				err = bblmAddFoldRange(&bblm_callbacks, foldstart, foldlen);
+				if (err)
+					return err;
+			}
 			
 			pendingheaders[lx] = -1;
 		}

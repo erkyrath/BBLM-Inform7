@@ -42,7 +42,7 @@
 			<key>BBLMScansFunctions</key>
 			<true/>
 			<key>BBLMFunctionScannerDoesFoldsToo</key>
-			<false/>
+			<true/>
 			<key>BBLMSuffixMap</key>
 			<array>
 				<dict>
