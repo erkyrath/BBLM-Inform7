@@ -34,6 +34,7 @@ enum
 static void AdjustRange(BBLMParamBlock &params, const BBLMCallbackBlock &callbacks)
 {
 	bool res;
+	syslog(LOG_WARNING, "### AdjustRange");
 	
 	/* Run backwards to the most recent code range (not a string or comment). */
 	while (params.fAdjustRangeParams.fStartIndex > 0) {
@@ -58,7 +59,9 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 	UniChar ch, lastch;
 	UInt32 lastpos = params.fCalcRunParams.fStartOffset;
 	UInt32 pos = lastpos;
-	
+
+	syslog(LOG_WARNING, "### CalculateRuns");
+
 	ch = ' ';
 	p += pos;
 	
