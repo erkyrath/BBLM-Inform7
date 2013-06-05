@@ -491,6 +491,7 @@ OSErr Inform7MachO(BBLMParamBlock &params,
 			const BBXTCallbackBlock &bbxt_callbacks)
 {
 	OSErr result;
+	syslog(LOG_WARNING, "### Called module, message %d", params.fMessage);
 
 	if ((params.fSignature != kBBLMParamBlockSignature) ||
 		(params.fVersion < kBBLMParamBlockVersion))
@@ -562,7 +563,8 @@ OSErr Inform7MachO(BBLMParamBlock &params,
 			break;
 		}
 	}
-	return result;	
+	syslog(LOG_WARNING, "### Leaving module, message %d", params.fMessage);
+	return result;
 }
 
 }
