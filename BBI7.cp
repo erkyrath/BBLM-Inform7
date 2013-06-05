@@ -23,6 +23,8 @@
 
 #define LANGUAGE_CODE 'Inf7'
 
+#include <syslog.h> //###
+
 enum
 {
 	kBBLMRunIsSubstitution =  kBBLMFirstUserRunKind,
@@ -68,6 +70,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 		
 		if (ch == '"') {
 			if (pos > lastpos) {
+				syslog(LOG_WARNING, "### run pos %ld len %ld (code)", lastpos, pos-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsCode, lastpos, pos-lastpos);
 				if (!res)
 					return;
@@ -79,6 +82,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 			while ((ch = *p), (ch && ch != '"')) {
 				if (ch == '[') {
 					if (pos > lastpos) {
+						syslog(LOG_WARNING, "### run pos %ld len %ld (doublequote)", lastpos, pos-lastpos);
 						res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsDoubleString, lastpos, pos-lastpos);
 						if (!res)
 							return;
@@ -101,6 +105,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 						pos++;
 					}
 					if (pos > lastpos) {
+						syslog(LOG_WARNING, "### run pos %ld len %ld (subst)", lastpos, pos-lastpos);
 						res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsSubstitution, lastpos, pos-lastpos);
 						if (!res)
 							return;
@@ -117,6 +122,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 			}
 			
 			if (pos > lastpos) {
+				syslog(LOG_WARNING, "### run pos %ld len %ld (doublequote)", lastpos, pos-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsDoubleString, lastpos, pos-lastpos);
 				if (!res)
 					return;
@@ -129,6 +135,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 		
 		if (ch == '[') {
 			if (pos > lastpos) {
+				syslog(LOG_WARNING, "### run pos %ld len %ld (code)", lastpos, pos-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsCode, lastpos, pos-lastpos);
 				if (!res)
 					return;
@@ -160,6 +167,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 			}
 			
 			if (pos > lastpos) {
+				syslog(LOG_WARNING, "### run pos %ld len %ld (comment)", lastpos, pos-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsBlockComment, lastpos, pos-lastpos);
 				if (!res)
 					return;
@@ -172,6 +180,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 		
 		if (ch == '-' && lastch == '(') {
 			if (pos-1 > lastpos) {
+				syslog(LOG_WARNING, "### run pos %ld len %ld (code)", lastpos, (pos-1)-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsCode, lastpos, (pos-1)-lastpos);
 				if (!res)
 					return;
@@ -199,6 +208,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 			}
 			
 			if (pos > lastpos) {
+				syslog(LOG_WARNING, "### run pos %ld len %ld (I6)", lastpos, pos-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsInform6, lastpos, pos-lastpos);
 				if (!res)
 					return;
@@ -228,7 +238,6 @@ static heading_def_t heading_def[NUM_HEADINGS] = {
 	{7, "section"}
 };
 
-#include <syslog.h> //###
 
 static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_callbacks)
 {
@@ -246,7 +255,7 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 	int wordend = -1;
 	UInt32 linestart = 0;
 	
-	//syslog(LOG_WARNING, "### ScanForFunctions");
+	syslog(LOG_WARNING, "### ScanForFunctions");
 	
 	ch = ' ';
 	p += pos;
@@ -408,7 +417,7 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 				procinfo.fNameStart = offset;
 				procinfo.fNameLength = linelength;
 				
-				//syslog(LOG_WARNING, "### adding function start %ld, end %ld", linestart, pos);
+				syslog(LOG_WARNING, "### adding function start %ld, end %ld", linestart, pos);
 				UInt32 funcindex = 0;
 				err = bblmAddFunctionToList(&bblm_callbacks, params.fFcnParams.fFcnList, procinfo, &funcindex);
 				if (err)
