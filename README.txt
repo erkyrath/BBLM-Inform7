@@ -22,6 +22,5 @@ and are copyright Bare Bones Software, Inc.
 Inform 7 is an interactive fiction development system:
   http://inform7.com
 
-WARNING: This has some kind of fatal bug (process freezes) under TW 4.5;
-  it seems to occur when the editor auto-balances brackets. I have not yet
-  investigated this.
+UPDATE: Fixed freezing bug for TW 4.5. Thanks to Rich Siegel for a quick
+  reply to my bug report!
