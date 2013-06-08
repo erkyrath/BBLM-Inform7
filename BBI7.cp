@@ -29,6 +29,7 @@ enum
 {
 	kBBLMRunIsSubstitution =  kBBLMFirstUserRunKind,
 	kBBLMRunIsInform6,
+	kBBLMRunIsShortString,
 };
 
 static void AdjustRange(BBLMParamBlock &params, const BBLMCallbackBlock &callbacks)
@@ -86,7 +87,8 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 				if (ch == '[') {
 					if (pos > lastpos) {
 						syslog(LOG_WARNING, "### run pos %ld len %ld (doublequote)", lastpos, pos-lastpos);
-						res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsDoubleString, lastpos, pos-lastpos);
+						//###BBLMRunCode kind = (pos-lastpos <= 1) ? kBBLMRunIsShortString : kBBLMRunIsDoubleString;
+						res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsShortString, lastpos, pos-lastpos);
 						if (!res)
 							return;
 						lastpos = pos;
@@ -126,7 +128,8 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 			
 			if (pos > lastpos) {
 				syslog(LOG_WARNING, "### run pos %ld len %ld (doublequote)", lastpos, pos-lastpos);
-				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsDoubleString, lastpos, pos-lastpos);
+				//###BBLMRunCode kind = (pos-lastpos <= 1) ? kBBLMRunIsShortString : kBBLMRunIsDoubleString;
+				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsShortString, lastpos, pos-lastpos);
 				if (!res)
 					return;
 				lastpos = pos;
