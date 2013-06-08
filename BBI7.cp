@@ -23,8 +23,11 @@
 
 #define LANGUAGE_CODE 'Inf7'
 
-#include <syslog.h> //###
+//#include <syslog.h>
 
+/* Define language-specific run types.
+	We need to use a custom type for string runs, rather than the standard kBBLMRunIsDoubleString. This is because of a bug in TW 4.5; it can choke on kBBLMRunIsDoubleString runs of length 1.
+ */
 enum
 {
 	kBBLMRunIsSubstitution =  kBBLMFirstUserRunKind,
@@ -35,7 +38,7 @@ enum
 static void AdjustRange(BBLMParamBlock &params, const BBLMCallbackBlock &callbacks)
 {
 	bool res;
-	syslog(LOG_WARNING, "### AdjustRange");
+	//syslog(LOG_WARNING, "### AdjustRange");
 	
 	/* Run backwards to the most recent code range (not a string or comment). */
 	while (params.fAdjustRangeParams.fStartIndex > 0) {
@@ -61,7 +64,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 	UInt32 lastpos = params.fCalcRunParams.fStartOffset;
 	UInt32 pos = lastpos;
 
-	syslog(LOG_WARNING, "### CalculateRuns");
+	//syslog(LOG_WARNING, "### CalculateRuns");
 
 	ch = ' ';
 	p += pos;
@@ -74,7 +77,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 		
 		if (ch == '"') {
 			if (pos > lastpos) {
-				syslog(LOG_WARNING, "### run pos %ld len %ld (code)", lastpos, pos-lastpos);
+				//syslog(LOG_WARNING, "### run pos %ld len %ld (code)", lastpos, pos-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsCode, lastpos, pos-lastpos);
 				if (!res)
 					return;
@@ -86,7 +89,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 			while ((ch = *p), (ch && ch != '"')) {
 				if (ch == '[') {
 					if (pos > lastpos) {
-						syslog(LOG_WARNING, "### run pos %ld len %ld (doublequote)", lastpos, pos-lastpos);
+						//syslog(LOG_WARNING, "### run pos %ld len %ld (doublequote)", lastpos, pos-lastpos);
 						res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsI7String, lastpos, pos-lastpos);
 						if (!res)
 							return;
@@ -109,7 +112,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 						pos++;
 					}
 					if (pos > lastpos) {
-						syslog(LOG_WARNING, "### run pos %ld len %ld (subst)", lastpos, pos-lastpos);
+						//syslog(LOG_WARNING, "### run pos %ld len %ld (subst)", lastpos, pos-lastpos);
 						res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsSubstitution, lastpos, pos-lastpos);
 						if (!res)
 							return;
@@ -126,7 +129,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 			}
 			
 			if (pos > lastpos) {
-				syslog(LOG_WARNING, "### run pos %ld len %ld (doublequote)", lastpos, pos-lastpos);
+				//syslog(LOG_WARNING, "### run pos %ld len %ld (doublequote)", lastpos, pos-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsI7String, lastpos, pos-lastpos);
 				if (!res)
 					return;
@@ -139,7 +142,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 		
 		if (ch == '[') {
 			if (pos > lastpos) {
-				syslog(LOG_WARNING, "### run pos %ld len %ld (code)", lastpos, pos-lastpos);
+				//syslog(LOG_WARNING, "### run pos %ld len %ld (code)", lastpos, pos-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsCode, lastpos, pos-lastpos);
 				if (!res)
 					return;
@@ -171,7 +174,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 			}
 			
 			if (pos > lastpos) {
-				syslog(LOG_WARNING, "### run pos %ld len %ld (comment)", lastpos, pos-lastpos);
+				//syslog(LOG_WARNING, "### run pos %ld len %ld (comment)", lastpos, pos-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsBlockComment, lastpos, pos-lastpos);
 				if (!res)
 					return;
@@ -184,7 +187,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 		
 		if (ch == '-' && lastch == '(') {
 			if (pos-1 > lastpos) {
-				syslog(LOG_WARNING, "### run pos %ld len %ld (code)", lastpos, (pos-1)-lastpos);
+				//syslog(LOG_WARNING, "### run pos %ld len %ld (code)", lastpos, (pos-1)-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsCode, lastpos, (pos-1)-lastpos);
 				if (!res)
 					return;
@@ -212,7 +215,7 @@ static void CalculateRuns(BBLMParamBlock &params, const BBLMCallbackBlock &bblm_
 			}
 			
 			if (pos > lastpos) {
-				syslog(LOG_WARNING, "### run pos %ld len %ld (I6)", lastpos, pos-lastpos);
+				//syslog(LOG_WARNING, "### run pos %ld len %ld (I6)", lastpos, pos-lastpos);
 				res = bblmAddRun(&bblm_callbacks, LANGUAGE_CODE, kBBLMRunIsInform6, lastpos, pos-lastpos);
 				if (!res)
 					return;
@@ -259,7 +262,7 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 	int wordend = -1;
 	UInt32 linestart = 0;
 	
-	syslog(LOG_WARNING, "### ScanForFunctions");
+	//syslog(LOG_WARNING, "### ScanForFunctions");
 	
 	ch = ' ';
 	p += pos;
@@ -421,7 +424,7 @@ static OSErr ScanForFunctions(BBLMParamBlock &params, const BBLMCallbackBlock &b
 				procinfo.fNameStart = offset;
 				procinfo.fNameLength = linelength;
 				
-				syslog(LOG_WARNING, "### adding function start %ld, end %ld", linestart, pos);
+				//syslog(LOG_WARNING, "### adding function start %ld, end %ld", linestart, pos);
 				UInt32 funcindex = 0;
 				err = bblmAddFunctionToList(&bblm_callbacks, params.fFcnParams.fFcnList, procinfo, &funcindex);
 				if (err)
@@ -492,7 +495,7 @@ OSErr Inform7MachO(BBLMParamBlock &params,
 			const BBXTCallbackBlock &bbxt_callbacks)
 {
 	OSErr result;
-	syslog(LOG_WARNING, "### Called module, message %d", params.fMessage);
+	//syslog(LOG_WARNING, "### Called module, message %d", params.fMessage);
 
 	if ((params.fSignature != kBBLMParamBlockSignature) ||
 		(params.fVersion < kBBLMParamBlockVersion))
@@ -533,11 +536,16 @@ OSErr Inform7MachO(BBLMParamBlock &params,
 					params.fMapRunParams.fColorCode = kBBLMSGMLAttributeValueColor;
 					params.fMapRunParams.fMapped =	true;
 					break;
+				case kBBLMRunIsI7String:
+					params.fMapRunParams.fColorCode = kBBLMStringColor;
+					params.fMapRunParams.fMapped =	true;
+					break;
 				default:
 					params.fMapRunParams.fMapped =	false;
 			}
 			result = noErr;
 			break;
+			
 		case kBBLMMapColorCodeToColorMessage:
 			params.fMapColorParams.fMapped = false;
 			result = noErr;
@@ -564,7 +572,7 @@ OSErr Inform7MachO(BBLMParamBlock &params,
 			break;
 		}
 	}
-	syslog(LOG_WARNING, "### Leaving module, message %d", params.fMessage);
+	//syslog(LOG_WARNING, "### Leaving module, message %d", params.fMessage);
 	return result;
 }
 
